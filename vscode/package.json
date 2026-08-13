@@ -1,0 +1,65 @@
+{
+  "name": "brancla-vscode",
+  "displayName": "Brancla - Dead Branch Sweeper",
+  "description": "Sync local database with GitHub/GitLab to safely sweep dead remote branches without losing unmerged work.",
+  "version": "1.0.0",
+  "publisher": "brancla",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Source Control",
+    "SCM Providers"
+  ],
+  "activationEvents": [
+    "onView:branclaSidebarView"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "brancla-container",
+          "title": "Brancla Branch Sweeper",
+          "icon": "$(git-branch)"
+        }
+      ]
+    },
+    "views": {
+      "brancla-container": [
+        {
+          "type": "webview",
+          "id": "branclaSidebarView",
+          "name": "Dead Branch Sweeper"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "brancla.scanWorkspace",
+        "title": "Brancla: Scan Workspace for Dead Branches",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "brancla.cleanDeadBranches",
+        "title": "Brancla: Clean Dead Branches Safely",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "brancla.restoreBranch",
+        "title": "Brancla: Restore Deleted Branch",
+        "icon": "$(discard)"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.75.0",
+    "typescript": "^5.0.0"
+  }
+}
