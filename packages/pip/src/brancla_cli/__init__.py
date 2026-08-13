@@ -49,20 +49,20 @@ def release_asset_name() -> str:
     machine = platform.machine().lower()
 
     if system == "darwin":
-      os_key = "darwin"
+        os_key = "darwin"
     elif system == "windows":
-      os_key = "win32"
+        os_key = "win32"
     elif system == "linux":
-      os_key = "linux"
+        os_key = "linux"
     else:
-      raise SystemExit(f"Unsupported operating system: {system}")
+        raise SystemExit(f"Unsupported operating system: {system}")
 
     if machine in ("arm64", "aarch64"):
-      arch_key = "arm64"
+        arch_key = "arm64"
     elif machine in ("x86_64", "amd64"):
-      arch_key = "x64"
+        arch_key = "x64"
     else:
-      raise SystemExit(f"Unsupported CPU architecture: {machine}")
+        raise SystemExit(f"Unsupported CPU architecture: {machine}")
 
     suffix = ".exe" if os_key == "win32" else ""
     return f"brancla-{os_key}-{arch_key}{suffix}"

@@ -16,3 +16,11 @@
 .idea/
 .vscode/
 .DS_Store
+
+# Package-manager build/download output
+packages/npm/vendor/
+packages/pip/build/
+packages/pip/dist/
+packages/pip/*.egg-info/
+__pycache__/
+*.pyc

@@ -88,7 +88,6 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "build:binaries": "node scripts/build-binaries.js",
     "compile": "tsc -p ./",
     "watch": "tsc -w -p ./"
   },

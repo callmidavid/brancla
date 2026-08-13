@@ -34,22 +34,32 @@ Before deleting any branch, Brancla automatically creates a **git safety ref** (
 
 ### Install the CLI
 
-Requires [Go 1.21+](https://go.dev/dl/).
+Install Brancla globally with npm or pip. Go is not required for normal users; the package downloads the right prebuilt binary from GitHub Releases.
 
 ```bash
-# from anywhere
-go install github.com/callmidavid/brancla/core/cmd/brancla@latest
+npm install -g brancla
 
-# or build from source
-git clone https://github.com/callmidavid/brancla.git
-cd brancla
+# or
+pip install brancla
+```
+
+Then run it from any git project:
+
+```bash
+brancla scan
+brancla clean --dry-run
+brancla clean
+```
+
+Developers can still build from source with Go 1.21+:
+
+```bash
 go build -o brancla ./core/cmd/brancla
-./brancla --help
 ```
 
 ### Start the daemon
 
-The VS Code extension needs the Brancla daemon running in the background. It auto-starts `brancla server` if it's on your `PATH`, or you can start it manually:
+The VS Code extension can auto-start the Brancla daemon. You can also start it manually:
 
 ```bash
 brancla server
@@ -131,7 +141,10 @@ brancla/
 │   ├── internal/safety/    # Safety Assessment Rules & Scoring
 │   ├── providers/          # GitHub & GitLab REST API Providers
 │   └── server/             # Local Daemon REST API (http://127.0.0.1:47382)
-└── vscode/                 # Standalone VS Code Extension Sidebar
+├── packages/
+│   ├── npm/                # npm global installer wrapper
+│   └── pip/                # PyPI installer wrapper
+└── vscode/                 # Optional VS Code Extension Sidebar
 ```
 
 ---
