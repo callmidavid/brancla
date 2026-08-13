@@ -5,11 +5,11 @@ import (
 	"os"
 	"path/filepath"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/spf13/cobra"
 	"github.com/callmidavid/brancla/core/internal/database"
 	"github.com/callmidavid/brancla/core/internal/engine"
 	"github.com/callmidavid/brancla/core/server"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/spf13/cobra"
 )
 
 func main() {

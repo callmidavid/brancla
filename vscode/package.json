@@ -4,6 +4,7 @@
   "description": "Sync local database with GitHub/GitLab to safely sweep dead remote branches without losing unmerged work.",
   "version": "1.0.0",
   "publisher": "brancla",
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.75.0"
   },
@@ -21,7 +22,7 @@
         {
           "id": "brancla-container",
           "title": "Brancla Branch Sweeper",
-          "icon": "$(git-branch)"
+          "icon": "media/icon.png"
         }
       ]
     },

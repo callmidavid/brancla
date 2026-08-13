@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/callmidavid/brancla/core/internal/engine"
 )
@@ -26,6 +27,11 @@ func NewServer(eng *engine.Engine, port int) *Server {
 }
 
 func (s *Server) Start() error {
+	if daemonRunning(s.port) {
+		fmt.Printf("✅ Brancla daemon already running on port %d. Reusing it.\n", s.port)
+		return nil
+	}
+
 	mux := http.NewServeMux()
 
 	// CORS Middleware wrapper
@@ -58,8 +64,17 @@ func (s *Server) Start() error {
 	return http.ListenAndServe(addr, mux)
 }
 
-func (s *Server) writePortInfo() {
-	home, err := os.UserHomeDir()
+func daemonRunning(port int) bool {
+	client := &http.Client{Timeout: 300 * time.Millisecond}
+	resp, err := client.Get(fmt.Sprintf("http://127.0.0.1:%d/api/status", port))
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	return resp.StatusCode == http.StatusOK
+}
+
+func (s *Server) writePortInfo() {	home, err := os.UserHomeDir()
 	if err == nil {
 		infoPath := filepath.Join(home, ".brancla", "server.json")
 		data, _ := json.MarshalIndent(map[string]interface{}{
