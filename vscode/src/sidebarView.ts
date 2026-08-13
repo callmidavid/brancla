@@ -82,6 +82,12 @@ export class BranclaSidebarProvider implements vscode.WebviewViewProvider {
     }
   }
 
+  public postDaemonStatus(online: boolean) {
+    if (this._view) {
+      this._view.webview.postMessage({ type: "daemonStatus", online });
+    }
+  }
+
   private _getHtmlForWebview(webview: vscode.Webview) {
     const iconUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "icon.png"),
@@ -402,6 +408,7 @@ export class BranclaSidebarProvider implements vscode.WebviewViewProvider {
         window.addEventListener('message', event => {
           const msg = event.data;
           if (msg.type === 'updateData') render(msg.payload);
+          else if (msg.type === 'daemonStatus') setOnline(msg.online);
         });
 
         function setOnline(online) {

@@ -86,7 +86,7 @@ Native terminal application built in Go using Cobra & Bubbletea TUI.
   - `brancla restore <branch>` — Restore deleted branch from local backup ref
   - `brancla server` — Start REST API daemon for the VS Code extension
 
-### 2. Standalone VS Code Extension Sidebar (`vscode/`)
+### 2. Standalone VS Code Extension Sidebar
 
 Dedicated VS Code Sidebar view integrated into the Activity Bar.
 

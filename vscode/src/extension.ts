@@ -66,18 +66,6 @@ async function ensureDaemon(): Promise<string> {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  // Start/attach to the daemon in the background.
-  ensureDaemon()
-    .then((url) => {
-      baseUrl = url;
-    })
-    .catch((err) => {
-      vscode.window.showWarningMessage(
-        `Brancla daemon not available. Install the 'brancla' CLI and run 'brancla server'.`,
-      );
-      console.error("ensureDaemon failed:", err);
-    });
-
   const provider = new BranclaSidebarProvider(context.extensionUri);
 
   context.subscriptions.push(
@@ -85,6 +73,28 @@ export function activate(context: vscode.ExtensionContext) {
       BranclaSidebarProvider.viewType,
       provider,
     ),
+  );
+
+  // Start or attach to the daemon, then push its real status to the sidebar.
+  function refreshDaemonStatus() {
+    ensureDaemon()
+      .then((url) => {
+        baseUrl = url;
+        provider.postDaemonStatus(true);
+      })
+      .catch((err) => {
+        provider.postDaemonStatus(false);
+        console.error("ensureDaemon failed:", err);
+      });
+  }
+
+  refreshDaemonStatus();
+
+  // Poll daemon health so the status pill stays accurate and the daemon is
+  // (re)started automatically if it ever goes down.
+  const statusTimer = setInterval(refreshDaemonStatus, 10000);
+  context.subscriptions.push(
+    new vscode.Disposable(() => clearInterval(statusTimer)),
   );
 
   // Command: Scan Workspace
@@ -108,6 +118,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showErrorMessage(
           "Brancla Daemon API not responding. Start daemon using: brancla server",
         );
+        refreshDaemonStatus();
       }
     },
   );
@@ -200,10 +211,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(scanCmd, cleanCmd, restoreCmd);
 
-  // Initial Scan on Activation
-  setTimeout(() => {
+  // Initial Scan on Activation (once the daemon is confirmed up).
+  ensureDaemon().then(() => {
     vscode.commands.executeCommand("brancla.scanWorkspace");
-  }, 1500);
+  });
 }
 
 export function deactivate() {}
