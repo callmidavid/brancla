@@ -70,34 +70,6 @@ Open VS Code → **Extensions** (`Ctrl+Shift+X`) → search for **"Brancla"** �
 vscode:extension/brancla.brancla-vscode
 ```
 
-### Install from a `.vsix` file (manual / pre-release)
-
-Grab `brancla-vscode-1.0.0.vsix` from the [GitHub Releases](https://github.com/callmidavid/brancla/releases) page, then:
-
-1. Open VS Code → **Extensions** (`Ctrl+Shift+X`)
-2. Click the `...` menu (top-right) → **Install from VSIX...**
-3. Select the `.vsix` file.
-
-### Run from source (development)
-
-```bash
-cd vscode
-npm install
-npm run compile
-code .
-```
-
-Press `F5` in the `vscode/` window to launch the **Extension Development Host**. Open a git repo as the workspace and the "Brancla" icon appears in the Activity Bar. Make sure `brancla` is on your `PATH` (see Quick Start) or start the daemon manually.
-
-### Build your own `.vsix`
-
-```bash
-cd vscode
-npm install -g @vscode/vsce
-vsce package          # produces brancla-vscode-1.0.0.vsix
-vsce publish          # publish to the VS Code Marketplace
-```
-
 ---
 
 ## Two Formats

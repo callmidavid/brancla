@@ -2,7 +2,7 @@
   "name": "brancla-vscode",
   "displayName": "Brancla - Dead Branch Sweeper",
   "description": "Sync local database with GitHub/GitLab to safely sweep dead remote branches without losing unmerged work.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "brancla",
   "icon": "media/icon.png",
   "repository": {
