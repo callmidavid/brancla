@@ -5,11 +5,14 @@
   "version": "1.0.0",
   "publisher": "brancla",
   "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/callmidavid/brancla.git"
+  },
   "engines": {
     "vscode": "^1.75.0"
   },
   "categories": [
-    "Source Control",
     "SCM Providers"
   ],
   "activationEvents": [
