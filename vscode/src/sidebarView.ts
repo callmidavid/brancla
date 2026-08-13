@@ -66,6 +66,9 @@ export class BranclaSidebarProvider implements vscode.WebviewViewProvider {
         case "scanRepo":
           vscode.commands.executeCommand("brancla.scanWorkspace");
           break;
+        case "getDaemonStatus":
+          this.postDaemonStatus(this._lastOnline);
+          break;
         case "cleanBranches":
           vscode.commands.executeCommand("brancla.cleanDeadBranches");
           break;
@@ -83,10 +86,13 @@ export class BranclaSidebarProvider implements vscode.WebviewViewProvider {
   }
 
   public postDaemonStatus(online: boolean) {
+    this._lastOnline = online;
     if (this._view) {
       this._view.webview.postMessage({ type: "daemonStatus", online });
     }
   }
+
+  private _lastOnline = false;
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const iconUri = webview.asWebviewUri(
@@ -106,226 +112,296 @@ export class BranclaSidebarProvider implements vscode.WebviewViewProvider {
       <title>Brancla Sweeper</title>
       <style>
         :root {
-          --gold: #f5c518;
-          --gold-bright: #ffd84d;
-          --gold-dim: rgba(245, 197, 24, 0.55);
-          --gold-faint: rgba(245, 197, 24, 0.12);
-          --gold-line: rgba(245, 197, 24, 0.28);
-          --ink: #0b0b0d;
-          --card: #141416;
-          --card-line: #26262b;
-          --text: #faf7ec;
-          --muted: #a3a39a;
-          --radius: 8px;
+          /* Brand */
+          --brand: #f5c518;
+          --brand-strong: #ffd84d;
+          /* Apple semantic palette */
+          --green: #30d158;
+          --orange: #ff9f0a;
+          --red: #ff453a;
+          --blue: #0a84ff;
+          --neutral: #98989d;
+
+          /* Theme-aware surfaces (adapt to light & dark via VS Code vars) */
+          --bg: var(--vscode-sideBar-background, #17171a);
+          --text: var(--vscode-foreground, #f5f5f7);
+          --muted: var(--vscode-descriptionForeground, #9b9ba3);
+          --border: rgba(127, 127, 127, 0.25);
+          --border: color-mix(in srgb, var(--vscode-foreground) 14%, transparent);
+
+          /* Layered glass-ish surfaces */
+          --surface: rgba(127, 127, 127, 0.065);
+          --surface-hi: rgba(127, 127, 127, 0.11);
+          --tint-sat: rgba(48, 209, 88, 0.14);
+          --tint-orn: rgba(255, 159, 10, 0.14);
+          --tint-gld: rgba(245, 197, 24, 0.14);
+
+          --radius: 12px;
+          --radius-sm: 8px;
+          --shadow: 0 1px 1.5px rgba(0,0,0,0.18), 0 8px 28px rgba(0,0,0,0.28);
+          --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+                         "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; }
         html, body { height: 100%; }
         body {
-          font-family: var(--vscode-font-family);
+          font-family: var(--font-stack);
           font-size: 13px;
           color: var(--text);
-          background: var(--ink);
+          background: var(--bg);
           padding: 0;
           margin: 0;
+          -webkit-font-smoothing: antialiased;
+          text-rendering: optimizeLegibility;
         }
 
+        /* ---- Hero / header with soft aurora glass ---- */
         .hero {
           position: relative;
-          padding: 16px 14px 14px;
-          background: linear-gradient(135deg, rgba(245,197,24,0.14), rgba(245,197,24,0.03) 60%, transparent);
-          border-bottom: 1px solid var(--gold-line);
+          padding: 18px 16px 14px;
+          overflow: hidden;
+          background: linear-gradient(180deg,
+              color-mix(in srgb, var(--brand) 9%, transparent),
+              color-mix(in srgb, var(--brand) 2%, transparent) 60%,
+              transparent);
+          border-bottom: 1px solid var(--border);
         }
-        .hero-top { display: flex; align-items: center; gap: 10px; }
+        .hero::before {
+          content: "";
+          position: absolute;
+          top: -42%;
+          left: 50%;
+          width: 240px;
+          height: 240px;
+          transform: translateX(-50%);
+          background: radial-gradient(circle,
+            color-mix(in srgb, var(--brand) 22%, transparent),
+            transparent 70%);
+          filter: blur(8px);
+          pointer-events: none;
+        }
+        .hero-top { position: relative; display: flex; align-items: center; gap: 11px; }
         .hero-logo {
-          width: 36px;
-          height: 36px;
-          border-radius: 9px;
-          box-shadow: 0 2px 12px rgba(245,197,24,0.28);
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--brand) 40%, transparent);
         }
-        .hero-title {
-          font-size: 14px;
-          font-weight: 800;
-          letter-spacing: -0.2px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .hero-title b { color: var(--gold); }
-        .hero-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+        .hero-title { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; }
+        .hero-title b { color: var(--brand); }
+        .hero-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
         .status-pill {
           margin-left: auto;
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          font-size: 10px;
+          gap: 6px;
+          font-size: 10.5px;
           font-weight: 600;
-          padding: 3px 8px;
-          border-radius: 20px;
-          background: var(--gold-faint);
-          color: var(--gold);
-          border: 1px solid var(--gold-line);
+          letter-spacing: 0.2px;
+          padding: 4px 10px;
+          border-radius: 100px;
+          background: var(--tint-gld);
+          color: var(--brand-strong);
+          border: 1px solid color-mix(in srgb, var(--brand) 30%, transparent);
+          box-shadow: inset 0 0 0 0.5px rgba(255,255,255,0.06);
         }
         .status-pill.offline {
-          background: rgba(120,120,120,0.10);
+          background: var(--surface);
           color: var(--muted);
-          border-color: #2c2c30;
+          border-color: var(--border);
         }
-        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-        .status-pill.offline .status-dot { animation: pulse 1.4s infinite; }
+        .status-dot {
+          width: 7px; height: 7px; border-radius: 50%;
+          background: var(--green);
+          box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 22%, transparent);
+        }
+        .status-pill.offline .status-dot { background: var(--neutral); box-shadow: none; animation: pulse 1.4s ease-in-out infinite; }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        .actions { display: flex; gap: 8px; padding: 12px 14px; }
+        /* ---- Action buttons (Apple style: filled primary, subtle secondary) ---- */
+        .actions { display: flex; gap: 9px; padding: 14px 16px 6px; }
         .btn {
           flex: 1;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          gap: 6px;
-          border: none;
-          border-radius: var(--radius);
+          gap: 7px;
+          border: 1px solid transparent;
+          border-radius: 11px;
           padding: 9px 10px;
-          font-size: 12px;
-          font-weight: 700;
+          font-family: inherit;
+          font-size: 12.5px;
+          font-weight: 600;
+          letter-spacing: 0.1px;
           cursor: pointer;
-          transition: transform 0.05s ease, filter 0.15s ease;
+          transition: transform 0.08s ease, filter 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+          -webkit-user-select: none;
+          user-select: none;
         }
-        .btn:active { transform: translateY(1px); }
+        .btn:active { transform: scale(0.985); }
+        .btn:focus-visible { outline: 2px solid color-mix(in srgb, var(--brand) 60%, transparent); outline-offset: 2px; }
         .btn-primary {
-          color: #0b0b0d;
-          background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+          color: #1a1400;
+          background: linear-gradient(180deg, var(--brand-strong), var(--brand));
+          box-shadow: 0 1px 2px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35);
         }
-        .btn-primary:hover { filter: brightness(1.08); }
-        .btn-danger {
-          color: var(--gold);
-          background: var(--card);
-          border: 1px solid var(--gold-line);
+        .btn-primary:hover { filter: brightness(1.07); box-shadow: 0 3px 10px color-mix(in srgb, var(--brand) 30%, transparent), inset 0 1px 0 rgba(255,255,255,0.35); }
+        .btn-primary svg { opacity: 0.85; }
+        .btn-secondary {
+          color: var(--text);
+          background: var(--surface);
+          border-color: var(--border);
         }
-        .btn-danger:hover { background: var(--gold-faint); }
+        .btn-secondary:hover { background: var(--surface-hi); }
+        .btn-secondary svg { color: var(--brand); }
+        .btn:disabled { opacity: 0.45; cursor: default; }
 
+        /* ---- Metrics (Apple-style tonal tiles) ---- */
         .stats {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 8px;
-          padding: 4px 14px 14px;
+          gap: 9px;
+          padding: 10px 16px 8px;
         }
         .stat {
-          background: var(--card);
-          border: 1px solid var(--card-line);
-          border-radius: var(--radius);
-          padding: 9px 6px;
+          position: relative;
+          border-radius: var(--radius-sm);
+          padding: 11px 6px 10px;
           text-align: center;
+          border: 1px solid var(--border);
+          background: var(--surface);
+          overflow: hidden;
         }
-        .stat-num { font-size: 19px; font-weight: 800; line-height: 1.1; color: var(--gold); }
-        .stat-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); margin-top: 2px; }
+        .stat::before {
+          content: "";
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          height: 2px;
+          opacity: 0.9;
+        }
+        .stat.safe { --acc: var(--green); }
+        .stat.warn { --acc: var(--orange); }
+        .stat.prot { --acc: var(--neutral); }
+        .stat.safe::before { background: var(--green); }
+        .stat.warn::before { background: var(--orange); }
+        .stat.prot::before { background: var(--neutral); }
+        .stat-num { font-size: 21px; font-weight: 700; line-height: 1; letter-spacing: -0.3px; }
+        .stat.safe .stat-num { color: var(--green); }
+        .stat.warn .stat-num { color: var(--orange); }
+        .stat.prot .stat-num { color: var(--muted); }
+        .stat-label {
+          font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.6px;
+          color: var(--muted); margin-top: 5px; font-weight: 600;
+        }
 
-        .section { padding: 0 14px 6px; }
+        /* ---- Sections ---- */
+        .section { padding: 0 16px 8px; }
         .section-title {
-          font-size: 10.5px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.6px;
-          color: var(--muted);
-          margin: 12px 0 7px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
+          font-size: 11px; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.9px; color: var(--muted);
+          margin: 14px 0 8px; display: flex; align-items: center; gap: 7px;
         }
-        .section-title svg { color: var(--gold); }
+        .section-title svg { color: var(--brand); }
         .count-badge {
-          background: rgba(127,127,127,0.16);
+          background: var(--surface-hi);
           color: var(--text);
-          border-radius: 10px;
-          padding: 0 6px;
-          font-size: 10px;
+          border-radius: 100px;
+          padding: 1px 7px;
+          font-size: 10px; font-weight: 600;
+          letter-spacing: 0;
         }
-        .count-badge.gold { background: var(--gold-faint); color: var(--gold); }
+        .count-badge.gold { background: var(--tint-gld); color: var(--brand-strong); }
 
+        /* ---- Branch cards ---- */
         .branch-card {
-          background: var(--card);
-          border: 1px solid var(--card-line);
-          border-left: 3px solid var(--gold-dim);
-          border-radius: var(--radius);
-          padding: 9px 10px;
-          margin-bottom: 7px;
+          position: relative;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          padding: 10px 11px;
+          margin-bottom: 8px;
+          overflow: hidden;
+          transition: transform 0.12s ease, border-color 0.2s ease, background 0.2s ease;
         }
-        .branch-card.safe { border-left-color: var(--gold); }
-        .branch-card.warn { border-left-color: var(--gold); border-style: dashed; }
-        .branch-card.prot { opacity: 0.75; }
+        .branch-card:hover { transform: translateY(-1px); }
+        .branch-card::before {
+          content: "";
+          position: absolute; top: 0; left: 0; bottom: 0; width: 3px;
+        }
+        .branch-card.safe::before { background: var(--green); }
+        .branch-card.warn::before { background: var(--orange); }
+        .branch-card.prot::before { background: var(--neutral); }
+        .branch-card.safe { border-color: color-mix(in srgb, var(--green) 30%, var(--border)); }
+        .branch-card.warn { border-color: color-mix(in srgb, var(--orange) 30%, var(--border)); }
+        .branch-card.prot { opacity: 0.7; }
 
         .branch-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 6px;
-          font-family: var(--vscode-editor-font-family);
-          font-weight: 600;
-          font-size: 12px;
+          display: flex; align-items: center; justify-content: space-between; gap: 8px;
+          font-family: var(--vscode-editor-font-family, monospace);
+          font-weight: 600; font-size: 12px;
         }
         .branch-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .branch-name svg { margin-right: 4px; opacity: 0.9; color: var(--gold); }
+        .branch-name svg { margin-right: 5px; opacity: 0.95; vertical-align: -2px; }
+        .branch-card.safe .branch-name svg { color: var(--green); }
+        .branch-card.warn .branch-name svg { color: var(--orange); }
+        .branch-card.prot .branch-name svg { color: var(--neutral); }
 
         .badge {
           flex-shrink: 0;
-          font-size: 9.5px;
-          font-weight: 700;
-          letter-spacing: 0.3px;
-          padding: 2px 7px;
-          border-radius: 10px;
-          text-transform: uppercase;
+          font-family: var(--font-stack);
+          font-size: 9.5px; font-weight: 700; letter-spacing: 0.4px;
+          padding: 2.5px 8px; border-radius: 100px; text-transform: uppercase;
         }
-        .badge.safe { background: var(--gold-faint); color: var(--gold); border: 1px solid var(--gold-line); }
-        .badge.warn { background: rgba(245,197,24,0.08); color: var(--gold-bright); border: 1px dashed var(--gold-line); }
-        .badge.prot { background: rgba(127,127,127,0.14); color: var(--muted); }
+        .badge.safe { background: var(--tint-sat); color: var(--green); }
+        .badge.warn { background: var(--tint-orn); color: var(--orange); }
+        .badge.prot { background: var(--surface-hi); color: var(--muted); }
 
         .score-bar {
-          height: 4px;
-          border-radius: 2px;
-          background: #222226;
-          margin-top: 8px;
-          overflow: hidden;
+          height: 5px; border-radius: 3px;
+          background: var(--surface-hi);
+          margin-top: 9px; overflow: hidden;
         }
         .score-fill {
-          height: 100%;
-          border-radius: 2px;
-          background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+          height: 100%; border-radius: 3px;
+          background: linear-gradient(90deg, var(--brand), var(--brand-strong));
         }
-        .branch-card.prot .score-fill { background: #3a3a40; }
+        .branch-card.safe .score-fill { background: linear-gradient(90deg, #2ec15e, var(--green)); }
+        .branch-card.warn .score-fill { background: linear-gradient(90deg, #ff8c00, var(--orange)); }
+        .branch-card.prot .score-fill { background: var(--surface-hi); }
 
-        .reason { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.35; }
+        .reason { font-size: 11px; color: var(--muted); margin-top: 7px; line-height: 1.4; }
         .pr-chip {
           display: inline-block;
-          background: var(--gold-faint);
-          color: var(--gold);
-          border-radius: 4px;
-          padding: 0 5px;
-          font-size: 10px;
-          font-weight: 600;
-          margin-right: 4px;
+          background: var(--surface-hi);
+          color: var(--blue);
+          border-radius: 6px; padding: 1px 6px;
+          font-size: 10px; font-weight: 600; margin-right: 5px;
         }
         .restore-link {
-          margin-top: 7px;
-          font-size: 11px;
-          color: var(--gold);
-          cursor: pointer;
-          font-weight: 600;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
+          margin-top: 8px; font-size: 11.5px; color: var(--blue);
+          cursor: pointer; font-weight: 600;
+          display: inline-flex; align-items: center; gap: 5px;
+          transition: opacity 0.15s ease;
         }
-        .restore-link:hover { text-decoration: underline; }
+        .branch-card.prot .restore-link { display: none; }
+        .restore-link:hover { opacity: 0.8; text-decoration: underline; }
 
         .empty {
-          background: var(--card);
-          border: 1px dashed var(--card-line);
-          border-radius: var(--radius);
-          padding: 16px 12px;
-          text-align: center;
-          color: var(--muted);
-          font-size: 12px;
+          background: var(--surface);
+          border: 1px dashed var(--border);
+          border-radius: var(--radius-sm);
+          padding: 18px 12px; text-align: center;
+          color: var(--muted); font-size: 12px; line-height: 1.4;
         }
-        .empty svg { color: var(--gold); opacity: 0.7; margin-bottom: 6px; }
+        .empty svg { color: var(--brand); opacity: 0.7; margin-bottom: 7px; }
+
+        .footer {
+          padding: 12px 16px 18px;
+          font-size: 10.5px; color: var(--muted); text-align: center;
+          letter-spacing: 0.2px; opacity: 0.8;
+        }
       </style>
     </head>
     <body>
@@ -342,13 +418,13 @@ export class BranclaSidebarProvider implements vscode.WebviewViewProvider {
 
       <div class="actions">
         <button class="btn btn-primary" id="btn-scan">${refreshIcon} Sync &amp; Scan</button>
-        <button class="btn btn-danger" id="btn-clean">${trashIcon} Clean Safe</button>
+        <button class="btn btn-secondary" id="btn-clean">${trashIcon} Clean Safe</button>
       </div>
 
       <div class="stats">
-        <div class="stat"><div class="stat-num" id="stat-safe">–</div><div class="stat-label">Safe</div></div>
-        <div class="stat"><div class="stat-num" id="stat-warn">–</div><div class="stat-label">Warnings</div></div>
-        <div class="stat"><div class="stat-num" id="stat-prot">–</div><div class="stat-label">Protected</div></div>
+        <div class="stat safe"><div class="stat-num" id="stat-safe">–</div><div class="stat-label">Safe</div></div>
+        <div class="stat warn"><div class="stat-num" id="stat-warn">–</div><div class="stat-label">Warnings</div></div>
+        <div class="stat prot"><div class="stat-num" id="stat-prot">–</div><div class="stat-label">Protected</div></div>
       </div>
 
       <div class="section">
@@ -365,6 +441,8 @@ export class BranclaSidebarProvider implements vscode.WebviewViewProvider {
         <div class="section-title">${ICONS.lock(13)} Protected <span class="count-badge" id="badge-prot">0</span></div>
         <div id="protected-list"></div>
       </div>
+
+      <div class="footer">Every delete is reversible via local backup refs</div>
 
       <script>
         const vscode = acquireVsCodeApi();
@@ -415,6 +493,10 @@ export class BranclaSidebarProvider implements vscode.WebviewViewProvider {
           statusEl.className = online ? 'status-pill' : 'status-pill offline';
           statusText.textContent = online ? 'Daemon online' : 'Daemon offline';
         }
+
+        // Pull current daemon status right when the view loads, so we don't
+        // depend on an earlier push that may have been sent before we attached.
+        vscode.postMessage({ type: 'getDaemonStatus' });
 
         function isSafe(b) { return b.safetyStatus === 'SAFE_TO_DELETE' || b.safetyStatus === 'SAFE_SQUASH_MERGED'; }
         function isWarn(b) { return b.safetyStatus === 'WARNING_UNMERGED' || b.safetyStatus === 'WARNING_CLOSED_PR'; }
