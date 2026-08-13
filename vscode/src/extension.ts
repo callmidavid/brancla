@@ -66,6 +66,7 @@ async function ensureDaemon(): Promise<string> {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  console.log("[Brancla] extension 1.0.2 activate: checking daemon status");
   const provider = new BranclaSidebarProvider(context.extensionUri);
 
   context.subscriptions.push(
@@ -80,15 +81,14 @@ export function activate(context: vscode.ExtensionContext) {
     ensureDaemon()
       .then((url) => {
         baseUrl = url;
+        console.log("[Brancla] daemon online at", url);
         provider.postDaemonStatus(true);
       })
       .catch((err) => {
+        console.log("[Brancla] daemon offline:", err?.message);
         provider.postDaemonStatus(false);
-        console.error("ensureDaemon failed:", err);
       });
   }
-
-  refreshDaemonStatus();
 
   // Poll daemon health so the status pill stays accurate and the daemon is
   // (re)started automatically if it ever goes down.
@@ -96,6 +96,9 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     new vscode.Disposable(() => clearInterval(statusTimer)),
   );
+
+  // Kick off the first check immediately.
+  refreshDaemonStatus();
 
   // Command: Scan Workspace
   const scanCmd = vscode.commands.registerCommand(
