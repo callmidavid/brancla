@@ -1,0 +1,18 @@
+# Compiled Go binary
+/brancla
+
+# Go build output
+*.exe
+*.test
+*.out
+
+# Local SQLite database
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Local config
+.idea/
+.vscode/
+.DS_Store
