@@ -46,6 +46,7 @@ pip install brancla
 Then run it from any git project:
 
 ```bash
+brancla --help
 brancla scan
 brancla clean --dry-run
 brancla clean
