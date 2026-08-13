@@ -74,9 +74,12 @@ func daemonRunning(port int) bool {
 	return resp.StatusCode == http.StatusOK
 }
 
-func (s *Server) writePortInfo() {	home, err := os.UserHomeDir()
+func (s *Server) writePortInfo() {
+	home, err := os.UserHomeDir()
 	if err == nil {
-		infoPath := filepath.Join(home, ".brancla", "server.json")
+		infoDir := filepath.Join(home, ".brancla")
+		_ = os.MkdirAll(infoDir, 0755)
+		infoPath := filepath.Join(infoDir, "server.json")
 		data, _ := json.MarshalIndent(map[string]interface{}{
 			"port": s.port,
 			"url":  fmt.Sprintf("http://127.0.0.1:%d", s.port),

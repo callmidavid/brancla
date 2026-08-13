@@ -2,7 +2,7 @@
 
 Sync your local git repository with GitHub/GitLab to safely sweep dead remote branches — without ever losing unmerged work.
 
-![Go](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go&logoColor=white)
+![VS Code](https://img.shields.io/badge/VS%20Code-1.75+-0078d7?logo=visualstudiocode&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-gold)
 
 ## Features
@@ -14,19 +14,16 @@ Sync your local git repository with GitHub/GitLab to safely sweep dead remote br
 
 ## Requirements
 
-- **Brancla CLI daemon** — the extension talks to a local daemon. Install the CLI and make sure it's on your `PATH`:
+- **VS Code** `^1.75.0` or newer.
+- **No Go install required** for normal extension use. Run **Brancla: Install or Repair CLI** from the Command Palette once; the extension copies its bundled CLI into `~/.brancla/bin` and uses that location automatically from any `.py`, `.js`, `.ts`, Go, Rust, Java, C/C++, C#, PHP, Ruby, shell, HTML/CSS, JSON, or YAML project.
 
-  ```bash
-  go install github.com/callmidavid/brancla/core/cmd/brancla@latest
-  ```
-
-  The extension auto-starts `brancla server` on activation. If it isn't found, start it manually:
+  The extension auto-starts the local daemon on activation. If `~/.brancla/bin` is on your shell `PATH`, you can also start it manually:
 
   ```bash
   brancla server
   ```
 
-- **VS Code** `^1.75.0` or newer.
+  Building the CLI from source is only needed for development.
 
 ## Usage
 
@@ -43,6 +40,7 @@ Sync your local git repository with GitHub/GitLab to safely sweep dead remote br
 | `Brancla: Scan Workspace for Dead Branches` | Scan repo & sync remote PR statuses |
 | `Brancla: Clean Dead Branches Safely` | Delete safe dead branches with backup refs |
 | `Brancla: Restore Deleted Branch` | Restore a branch from local backup ref |
+| `Brancla: Install or Repair CLI` | Install the bundled CLI globally to `~/.brancla/bin` |
 
 ## How safe is it?
 

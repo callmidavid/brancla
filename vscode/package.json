@@ -15,6 +15,33 @@
   "categories": [
     "SCM Providers"
   ],
+  "activationEvents": [
+    "onStartupFinished",
+    "workspaceContains:**/.git",
+    "onView:branclaSidebarView",
+    "onCommand:brancla.scanWorkspace",
+    "onCommand:brancla.cleanDeadBranches",
+    "onCommand:brancla.restoreBranch",
+    "onCommand:brancla.installCli",
+    "onLanguage:python",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact",
+    "onLanguage:go",
+    "onLanguage:rust",
+    "onLanguage:java",
+    "onLanguage:c",
+    "onLanguage:cpp",
+    "onLanguage:csharp",
+    "onLanguage:php",
+    "onLanguage:ruby",
+    "onLanguage:shellscript",
+    "onLanguage:html",
+    "onLanguage:css",
+    "onLanguage:json",
+    "onLanguage:yaml"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
@@ -51,11 +78,17 @@
         "command": "brancla.restoreBranch",
         "title": "Brancla: Restore Deleted Branch",
         "icon": "$(discard)"
+      },
+      {
+        "command": "brancla.installCli",
+        "title": "Brancla: Install or Repair CLI",
+        "icon": "$(cloud-download)"
       }
     ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
+    "build:binaries": "node scripts/build-binaries.js",
     "compile": "tsc -p ./",
     "watch": "tsc -w -p ./"
   },
