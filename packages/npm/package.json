@@ -1,0 +1,34 @@
+{
+  "name": "brancla",
+  "version": "1.0.2",
+  "description": "Safe local Git dead branch sweeper synced with GitHub and GitLab.",
+  "license": "MIT",
+  "homepage": "https://github.com/callmidavid/brancla#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/callmidavid/brancla.git"
+  },
+  "bin": {
+    "brancla": "bin/brancla.js"
+  },
+  "scripts": {
+    "postinstall": "node scripts/install.js"
+  },
+  "files": [
+    "bin",
+    "scripts",
+    "vendor",
+    "README.md"
+  ],
+  "keywords": [
+    "git",
+    "branches",
+    "cli",
+    "cleanup",
+    "github",
+    "gitlab"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
